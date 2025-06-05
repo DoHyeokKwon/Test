@@ -562,8 +562,8 @@
                         <div class="mode-desc">아무 타일이나 터치해서 파괴</div>
                     </div>
                     <div class="mode-option" data-mode="sequence" onclick="selectMode('sequence')">
-                        <div class="mode-name">🔢 순서 모드</div>
-                        <div class="mode-desc">숫자 순서대로 터치해야 파괴</div>
+                        <div class="mode-name">💀 하드코어 순서 모드</div>
+                        <div class="mode-desc">순서대로 터치, 한 번 실수하면 게임 오버!</div>
                     </div>
                 </div>
             </div>
@@ -800,7 +800,7 @@
             document.getElementById('gameScreen').style.display = 'block';
             
             // 모드 표시 업데이트
-            modeIndicatorElement.textContent = gameState.mode === 'free' ? '🎯 자유 모드' : '🔢 순서 모드';
+            modeIndicatorElement.textContent = gameState.mode === 'free' ? '🎯 자유 모드' : '💀 하드코어 모드';
             
             startGame();
         }
@@ -820,7 +820,7 @@
             if (gameState.mode === 'free') {
                 statusElement.textContent = '타일을 빠르게 터치하세요!';
             } else {
-                statusElement.textContent = '숫자 순서대로 터치하세요!';
+                statusElement.textContent = '순서대로 터치하세요! 실수하면 게임 오버!';
             }
             
             // 첫 번째 타일 즉시 생성
@@ -917,11 +917,8 @@
 
             const tileIndex = parseInt(tile.getAttribute('data-index'));
             
-            // 이미 breaking 상태이거나 고정된 타일이면 무시
-            if (tile.classList.contains('breaking') || tile.classList.contains('locked')) {
-                if (tile.classList.contains('locked')) {
-                    statusElement.textContent = '고정된 타일입니다! 잠시 후 사라집니다!';
-                }
+            // 이미 breaking 상태면 무시
+            if (tile.classList.contains('breaking')) {
                 return;
             }
 
@@ -1078,7 +1075,7 @@
 
         function clearAllTiles() {
             tiles.forEach(function(tile) {
-                tile.classList.remove('active', 'breaking', 'locked');
+                tile.classList.remove('active', 'breaking');
                 tile.textContent = '';
             });
             gameState.activeTiles = [];
