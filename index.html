@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>타일 브레이크</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+            touch-action: manipulation;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 메인 메뉴 스타일 */
+        .main-menu {
+            display: block;
+        }
+
+        .mode-selection {
+            margin-bottom: 20px;
+        }
+
+        .mode-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ecf0f1;
+        }
+
+        .mode-options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .mode-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .mode-option.selected {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .mode-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .mode-desc {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .settings {
+            margin-bottom: 20px;
+        }
+
+        .setting-item {
+            margin-bottom: 15px;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1em;
+            color: #ecf0f1;
+        }
+
+        .speed-slider-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .speed-display {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f39c12;
+        }
+
+        .speed-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+            margin-bottom: 8px;
+            -webkit-appearance: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .speed-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .records-section {
+            margin-bottom: 20px;
+        }
+
+        .records-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-records {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clear-records:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+
+        .records-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.9em;
+        }
+
+        .record-rank {
+            font-weight: bold;
+            color: #f39c12;
+            min-width: 30px;
+        }
+
+        .record-rank.gold { color: #f1c40f; }
+        .record-rank.silver { color: #bdc3c7; }
+        .record-rank.bronze { color: #d68910; }
+
+        .record-score {
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        .record-mode {
+            font-size: 0.8em;
+            color: #3498db;
+        }
+
+        .record-date {
+            font-size: 0.7em;
+            opacity: 0.7;
+        }
+
+        .no-records {
+            text-align: center;
+            opacity: 0.6;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .start-game-btn {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .start-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        /* 게임 화면 스타일 */
+        .game-screen {
+            display: none;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .score {
+            color: #2ecc71;
+        }
+
+        .speed {
+            color: #f39c12;
+        }
+
+        .mode-indicator {
+            color: #3498db;
+            font-size: 0.9em;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            aspect-ratio: 1;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .tile {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .tile.active {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border-color: #e74c3c;
+            animation: tileAppear 0.3s ease-out;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .tile.sequence {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border-color: #e74c3c;
+            color: transparent;
+            animation: tileAppear 0.3s ease-out;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .tile.locked {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            border-color: #95a5a6;
+            animation: lockedBlink 0.5s ease-in-out infinite;
+            cursor: not-allowed;
+            box-shadow: 0 4px 15px rgba(149, 165, 166, 0.4);
+        }
+
+        @keyframes lockedBlink {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .tile.active:hover, .tile.sequence:hover {
+            transform: scale(1.05);
+        }
+
+        .tile.breaking {
+            animation: tileBreak 0.3s ease-in;
+        }
+
+        @keyframes tileAppear {
+            0% { 
+                transform: scale(0);
+                opacity: 0;
+            }
+            70% { 
+                transform: scale(1.1);
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes tileBreak {
+            0% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.2) rotate(10deg);
+                opacity: 0.7;
+            }
+            100% { 
+                transform: scale(0) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.pause {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .btn.back {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 1.1em;
+            min-height: 30px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .game-over-popup {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 300px;
+            margin: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+            animation: popupShow 0.4s ease-out;
+        }
+
+        @keyframes popupShow {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .popup-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .popup-score {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #f1c40f;
+        }
+
+        .popup-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 5px;
+        }
+
+        .popup-btn:hover, .popup-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        .best-score {
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        /* 모바일 최적화 */
+                    @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                max-width: 350px;
+            }
+            
+            .title {
+                font-size: 1.6em;
+            }
+            
+            .game-info {
+                font-size: 1em;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+            
+            .records-container {
+                max-height: 150px;
+            }
+            
+            .record-item {
+                padding: 6px 8px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">💥 타일 브레이크</h1>
+        
+        <!-- 메인 메뉴 -->
+        <div class="main-menu" id="mainMenu">
+            <div class="records-section">
+                <div class="records-title">
+                    <span>🏆 기록 순위</span>
+                    <button class="clear-records" onclick="clearRecords()">기록 삭제</button>
+                </div>
+                <div class="records-container" id="recordsContainer">
+                    <div class="no-records">아직 기록이 없습니다</div>
+                </div>
+            </div>
+
+            <div class="mode-selection">
+                <div class="mode-title">게임 모드 선택</div>
+                <div class="mode-options">
+                    <div class="mode-option selected" data-mode="free" onclick="selectMode('free')">
+                        <div class="mode-name">🎯 자유 모드</div>
+                        <div class="mode-desc">아무 타일이나 터치해서 파괴</div>
+                    </div>
+                    <div class="mode-option" data-mode="sequence" onclick="selectMode('sequence')">
+                        <div class="mode-name">🔢 순서 모드</div>
+                        <div class="mode-desc">숫자 순서대로 터치해야 파괴</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings">
+                <div class="setting-item">
+                    <label class="setting-label">게임 속도 설정</label>
+                    <div class="speed-slider-container">
+                        <div class="speed-display">
+                            <span id="speedDisplay">x1.0</span>
+                        </div>
+                        <input type="range" id="speedSlider" min="0.5" max="10.0" step="0.1" value="1.0" class="speed-slider">
+                        <div class="speed-labels">
+                            <span>x0.5</span>
+                            <span>x5.0</span>
+                            <span>x10.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="start-game-btn" onclick="startGameFromMenu()">게임 시작 🚀</button>
+            
+            <div class="best-score">
+                최고 점수: <span id="bestScore">0</span>
+            </div>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div class="game-screen" id="gameScreen">
+            <div class="game-info">
+                <div class="score">점수: <span id="score">0</span></div>
+                <div class="mode-indicator" id="modeIndicator">자유 모드</div>
+                <div class="speed">속도: <span id="speed">1.0x</span></div>
+            </div>
+
+            <div class="grid-container" id="gameGrid">
+                <div class="tile" data-index="0"></div>
+                <div class="tile" data-index="1"></div>
+                <div class="tile" data-index="2"></div>
+                <div class="tile" data-index="3"></div>
+                <div class="tile" data-index="4"></div>
+                <div class="tile" data-index="5"></div>
+                <div class="tile" data-index="6"></div>
+                <div class="tile" data-index="7"></div>
+                <div class="tile" data-index="8"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn back" onclick="backToMenu()">메뉴</button>
+                <button class="btn pause" id="pauseBtn" onclick="pauseGame()">일시정지</button>
+            </div>
+
+            <div class="status" id="status">게임을 시작합니다!</div>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOverModal">
+        <div class="game-over-popup">
+            <div class="popup-title">💀 게임 오버!</div>
+            <div class="popup-score">점수: <span id="finalScore">0</span></div>
+            <button class="popup-btn" onclick="restartGame()">다시 시작</button>
+            <button class="popup-btn" onclick="backToMenuFromGameOver()">메뉴로</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            isPlaying: false,
+            isPaused: false,
+            score: 0,
+            speed: 1.0,
+            activeTiles: [],
+            gameInterval: null,
+            difficultyInterval: null,
+            mode: 'free', // 'free' 또는 'sequence'
+            sequenceNumber: 1,
+            nextTargetIndex: -1,
+            speedMultiplier: 1.0
+        };
+
+        let gameConfig = {
+            initialSpeed: 2000,
+            speedIncrease: 0.1,
+            scorePerTile: 10,
+            speedIncreaseInterval: 15000
+        };
+
+        const tiles = document.querySelectorAll('.tile');
+        const scoreElement = document.getElementById('score');
+        const speedElement = document.getElementById('speed');
+        const statusElement = document.getElementById('status');
+        const bestScoreElement = document.getElementById('bestScore');
+        const modeIndicatorElement = document.getElementById('modeIndicator');
+
+        // 로컬 저장소에서 최고 점수 불러오기
+        let bestScore = 0;
+        let gameRecords = [];
+        
+        try {
+            bestScore = parseInt(localStorage.getItem('tileBreakBestScore')) || 0;
+            gameRecords = JSON.parse(localStorage.getItem('tileBreakRecords')) || [];
+        } catch (e) {
+            bestScore = 0;
+            gameRecords = [];
+        }
+        bestScoreElement.textContent = bestScore;
+
+        // 속도 슬라이더 이벤트
+        const speedSlider = document.getElementById('speedSlider');
+        const speedDisplay = document.getElementById('speedDisplay');
+        
+        speedSlider.addEventListener('input', function() {
+            gameState.speedMultiplier = parseFloat(this.value);
+            speedDisplay.textContent = 'x' + gameState.speedMultiplier.toFixed(1);
+            // 실제 속도 계산 (높은 배수 = 더 빠른 게임)
+            gameConfig.initialSpeed = Math.round(2000 / gameState.speedMultiplier);
+        });
+
+        // 타일 클릭 이벤트
+        tiles.forEach(function(tile, index) {
+            tile.addEventListener('click', function(e) {
+                e.preventDefault();
+                breakTile(this);
+            });
+            
+            tile.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                breakTile(this);
+            });
+        });
+
+        function selectMode(mode) {
+            gameState.mode = mode;
+            
+            // 선택된 모드 표시
+            document.querySelectorAll('.mode-option').forEach(function(option) {
+                option.classList.remove('selected');
+            });
+            document.querySelector('[data-mode="' + mode + '"]').classList.add('selected');
+        }
+
+        function selectSpeed(speed) {
+            // 이 함수는 더 이상 사용하지 않음
+        }
+
+        function displayRecords() {
+            const container = document.getElementById('recordsContainer');
+            
+            if (gameRecords.length === 0) {
+                container.innerHTML = '<div class="no-records">아직 기록이 없습니다</div>';
+                return;
+            }
+
+            // 점수순으로 정렬
+            const sortedRecords = gameRecords.sort(function(a, b) {
+                return b.score - a.score;
+            });
+
+            let html = '';
+            sortedRecords.slice(0, 10).forEach(function(record, index) {
+                let rankClass = '';
+                let rankText = (index + 1) + '위';
+                
+                if (index === 0) {
+                    rankClass = 'gold';
+                    rankText = '🥇';
+                } else if (index === 1) {
+                    rankClass = 'silver';
+                    rankText = '🥈';
+                } else if (index === 2) {
+                    rankClass = 'bronze';
+                    rankText = '🥉';
+                }
+
+                const date = new Date(record.date);
+                const dateStr = (date.getMonth() + 1) + '/' + date.getDate();
+                const modeText = record.mode === 'free' ? '자유' : '순서';
+
+                html += '<div class="record-item">';
+                html += '<div class="record-rank ' + rankClass + '">' + rankText + '</div>';
+                html += '<div class="record-score">' + record.score + '점</div>';
+                html += '<div class="record-mode">' + modeText + '</div>';
+                html += '<div class="record-date">' + dateStr + '</div>';
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        function saveRecord(score, mode) {
+            const record = {
+                score: score,
+                mode: mode,
+                date: Date.now()
+            };
+
+            gameRecords.push(record);
+            
+            // 최대 50개 기록만 유지
+            if (gameRecords.length > 50) {
+                gameRecords = gameRecords.sort(function(a, b) {
+                    return b.score - a.score;
+                }).slice(0, 50);
+            }
+
+            try {
+                localStorage.setItem('tileBreakRecords', JSON.stringify(gameRecords));
+            } catch (e) {
+                console.log('기록 저장 실패');
+            }
+
+            displayRecords();
+        }
+
+        function clearRecords() {
+            if (confirm('모든 기록을 삭제하시겠습니까?')) {
+                gameRecords = [];
+                bestScore = 0;
+                try {
+                    localStorage.removeItem('tileBreakRecords');
+                    localStorage.removeItem('tileBreakBestScore');
+                } catch (e) {
+                    console.log('기록 삭제 실패');
+                }
+                bestScoreElement.textContent = '0';
+                displayRecords();
+            }
+        }
+
+        function startGameFromMenu() {
+            // 화면 전환
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // 모드 표시 업데이트
+            modeIndicatorElement.textContent = gameState.mode === 'free' ? '🎯 자유 모드' : '🔢 순서 모드';
+            
+            startGame();
+        }
+
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.isPaused = false;
+            gameState.score = 0;
+            gameState.speed = 1.0;
+            gameState.activeTiles = [];
+            gameState.sequenceNumber = 1;
+            gameState.nextTargetIndex = -1;
+
+            updateDisplay();
+            clearAllTiles();
+            
+            if (gameState.mode === 'free') {
+                statusElement.textContent = '타일을 빠르게 터치하세요!';
+            } else {
+                statusElement.textContent = '숫자 순서대로 터치하세요!';
+            }
+            
+            // 첫 번째 타일 즉시 생성
+            createRandomTile();
+            
+            // 타일 생성 인터벌 시작
+            gameState.gameInterval = setInterval(createRandomTile, gameConfig.initialSpeed);
+            
+            // 난이도 증가 인터벌 시작
+            gameState.difficultyInterval = setInterval(increaseDifficulty, gameConfig.speedIncreaseInterval);
+        }
+
+        function pauseGame() {
+            if (gameState.isPaused) {
+                // 게임 재개
+                gameState.isPaused = false;
+                document.getElementById('pauseBtn').textContent = '일시정지';
+                statusElement.textContent = gameState.mode === 'free' ? '타일을 빠르게 터치하세요!' : '숫자 순서대로 터치하세요!';
+                
+                gameState.gameInterval = setInterval(createRandomTile, gameConfig.initialSpeed / gameState.speed);
+                gameState.difficultyInterval = setInterval(increaseDifficulty, gameConfig.speedIncreaseInterval);
+            } else {
+                // 게임 일시정지
+                gameState.isPaused = true;
+                document.getElementById('pauseBtn').textContent = '계속하기';
+                statusElement.textContent = '게임이 일시정지되었습니다';
+                
+                clearInterval(gameState.gameInterval);
+                clearInterval(gameState.difficultyInterval);
+            }
+        }
+
+        function createRandomTile() {
+            if (!gameState.isPlaying || gameState.isPaused) return;
+
+            // 빈 타일 찾기
+            const emptyTiles = [];
+            tiles.forEach(function(tile, index) {
+                if (!tile.classList.contains('active')) {
+                    emptyTiles.push(index);
+                }
+            });
+
+            // 모든 타일이 차있으면 게임 오버
+            if (emptyTiles.length === 0) {
+                gameOver();
+                return;
+            }
+
+            // 랜덤한 빈 타일 선택
+            const randomIndex = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+            const selectedTile = tiles[randomIndex];
+            
+            if (gameState.mode === 'free') {
+                selectedTile.classList.add('active');
+                gameState.activeTiles.push(randomIndex);
+            } else {
+                // 순서 모드: 일반 빨간색 타일로 생성 (자유모드와 동일한 모습)
+                selectedTile.classList.add('active');
+                selectedTile.textContent = '';
+                gameState.activeTiles.push({index: randomIndex, number: gameState.sequenceNumber});
+                
+                // 첫 번째 타일이면 다음 타겟으로 설정 (시각적 변화 없음)
+                if (gameState.activeTiles.length === 1) {
+                    gameState.nextTargetIndex = randomIndex;
+                }
+                
+                gameState.sequenceNumber++;
+            }
+        }
+
+        function updateNextTarget() {
+            if (gameState.mode !== 'sequence' || gameState.activeTiles.length === 0) {
+                return;
+            }
+
+            // 가장 작은 숫자 찾기 (시각적 표시 없이 내부적으로만)
+            let minNumber = Math.min.apply(Math, gameState.activeTiles.map(function(tile) {
+                return tile.number;
+            }));
+            
+            // 해당 숫자의 타일 인덱스만 저장 (시각적 변화 없음)
+            gameState.activeTiles.forEach(function(tileData) {
+                if (tileData.number === minNumber) {
+                    gameState.nextTargetIndex = tileData.index;
+                }
+            });
+        }
+
+        function breakTile(tile) {
+            if (!gameState.isPlaying || gameState.isPaused) {
+                return;
+            }
+
+            const tileIndex = parseInt(tile.getAttribute('data-index'));
+            
+            // 이미 breaking 상태이거나 고정된 타일이면 무시
+            if (tile.classList.contains('breaking') || tile.classList.contains('locked')) {
+                if (tile.classList.contains('locked')) {
+                    statusElement.textContent = '고정된 타일입니다! 잠시 후 다시 시도하세요!';
+                }
+                return;
+            }
+
+            if (gameState.mode === 'free') {
+                // 자유 모드: 활성 타일만 깰 수 있음
+                if (!tile.classList.contains('active')) {
+                    return;
+                }
+                
+                // 타일 깨지는 애니메이션
+                tile.classList.add('breaking');
+                
+                // 활성 타일 목록에서 즉시 제거
+                const activeIndex = gameState.activeTiles.indexOf(tileIndex);
+                if (activeIndex > -1) {
+                    gameState.activeTiles.splice(activeIndex, 1);
+                }
+                
+                setTimeout(function() {
+                    tile.classList.remove('active', 'breaking');
+                }, 300);
+
+                // 점수 증가
+                gameState.score += gameConfig.scorePerTile;
+                updateDisplay();
+                
+                statusElement.textContent = '훌륭해요! +' + gameConfig.scorePerTile + '점';
+                
+            } else {
+                // 순서 모드: 올바른 순서인지 확인
+                if (!tile.classList.contains('active')) {
+                    return;
+                }
+                
+                // 다음 타겟이 아니면 잘못된 터치 - 타일 고정 패널티
+                if (tileIndex !== gameState.nextTargetIndex) {
+                    // 이미 고정된 타일이면 무시
+                    if (tile.classList.contains('locked')) {
+                        statusElement.textContent = '고정된 타일입니다! 다른 타일을 터치하세요!';
+                        return;
+                    }
+                    
+                    // 타일 고정 (3초간)
+                    tile.classList.add('locked');
+                    statusElement.textContent = '잘못된 순서! 타일이 3초간 고정됩니다!';
+                    
+                    setTimeout(function() {
+                        if (tile.classList.contains('locked')) {
+                            tile.classList.remove('locked');
+                        }
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                // 타일 깨지는 애니메이션
+                tile.classList.add('breaking');
+                
+                // 활성 타일 목록에서 제거
+                gameState.activeTiles = gameState.activeTiles.filter(function(tileData) {
+                    return tileData.index !== tileIndex;
+                });
+                
+                setTimeout(function() {
+                    tile.classList.remove('active', 'breaking');
+                    tile.textContent = '';
+                }, 300);
+
+                // 점수 증가
+                gameState.score += gameConfig.scorePerTile;
+                updateDisplay();
+                
+                // 다음 타겟 업데이트
+                updateNextTarget();
+                
+                statusElement.textContent = '정확해요! +' + gameConfig.scorePerTile + '점';
+            }
+        }
+
+        function increaseDifficulty() {
+            if (!gameState.isPlaying || gameState.isPaused) return;
+            
+            gameState.speed += gameConfig.speedIncrease;
+            
+            // 인터벌 재설정 (더 빠르게)
+            clearInterval(gameState.gameInterval);
+            gameState.gameInterval = setInterval(createRandomTile, gameConfig.initialSpeed / gameState.speed);
+            
+            updateDisplay();
+            statusElement.textContent = '속도 증가! ' + gameState.speed.toFixed(1) + 'x';
+        }
+
+        function gameOver() {
+            gameState.isPlaying = false;
+            clearInterval(gameState.gameInterval);
+            clearInterval(gameState.difficultyInterval);
+            
+            // 최고 점수 확인 및 저장
+            if (gameState.score > bestScore) {
+                bestScore = gameState.score;
+                try {
+                    localStorage.setItem('tileBreakBestScore', bestScore);
+                } catch (e) {
+                    console.log('로컬 저장소 저장 실패');
+                }
+                bestScoreElement.textContent = bestScore;
+            }
+
+            // 기록 저장
+            saveRecord(gameState.score, gameState.mode);
+            
+            // 게임 오버 팝업 표시
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('gameOverModal').style.display = 'flex';
+        }
+
+        function restartGame() {
+            document.getElementById('gameOverModal').style.display = 'none';
+            clearAllTiles();
+            startGame();
+        }
+
+        function backToMenu() {
+            if (gameState.isPlaying) {
+                clearInterval(gameState.gameInterval);
+                clearInterval(gameState.difficultyInterval);
+                gameState.isPlaying = false;
+            }
+            
+            clearAllTiles();
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+        }
+
+        function backToMenuFromGameOver() {
+            document.getElementById('gameOverModal').style.display = 'none';
+            backToMenu();
+        }
+
+        function clearAllTiles() {
+            tiles.forEach(function(tile) {
+                tile.classList.remove('active', 'breaking', 'locked');
+                tile.textContent = '';
+            });
+            gameState.activeTiles = [];
+            gameState.sequenceNumber = 1;
+            gameState.nextTargetIndex = -1;
+        }
+
+        function updateDisplay() {
+            scoreElement.textContent = gameState.score;
+            speedElement.textContent = gameState.speed.toFixed(1) + 'x';
+        }
+
+        // 전역 에러 핸들러
+        window.addEventListener('error', function(e) {
+            console.log('에러 발생:', e.message);
+        });
+
+        // 게임 초기 상태 설정
+        updateDisplay();
+        displayRecords();
+    </script>
+</body>
+</html>
