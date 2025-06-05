@@ -920,7 +920,7 @@
             // 이미 breaking 상태이거나 고정된 타일이면 무시
             if (tile.classList.contains('breaking') || tile.classList.contains('locked')) {
                 if (tile.classList.contains('locked')) {
-                    statusElement.textContent = '고정된 타일입니다! 잠시 후 다시 시도하세요!';
+                    statusElement.textContent = '고정된 타일입니다! 잠시 후 사라집니다!';
                 }
                 return;
             }
@@ -964,14 +964,29 @@
                         return;
                     }
                     
-                    // 타일 고정 (3초간)
+                    // 타일 고정 + 점수 차감 패널티
                     tile.classList.add('locked');
-                    statusElement.textContent = '잘못된 순서! 타일이 3초간 고정됩니다!';
+                    
+                    // 점수 차감 (-50점, 단 0점 아래로는 떨어지지 않음)
+                    gameState.score = Math.max(0, gameState.score - 50);
+                    updateDisplay();
+                    
+                    statusElement.textContent = '잘못된 순서! -50점, 타일이 3초 후 사라집니다!';
                     
                     setTimeout(function() {
-                        if (tile.classList.contains('locked')) {
-                            tile.classList.remove('locked');
-                        }
+                        // 타일 완전히 제거 (초기화)
+                        tile.classList.remove('active', 'locked');
+                        tile.textContent = '';
+                        
+                        // 활성 타일 목록에서도 제거
+                        gameState.activeTiles = gameState.activeTiles.filter(function(tileData) {
+                            return tileData.index !== tileIndex;
+                        });
+                        
+                        // 다음 타겟 업데이트
+                        updateNextTarget();
+                        
+                        statusElement.textContent = '고정된 타일이 사라졌습니다!';
                     }, 3000);
                     
                     return;
